@@ -3,8 +3,6 @@ import { paginator } from "../../paginator/paginate-bootstrap.js";
 import { sanitizeStringWithTableRows } from "./utils.js";
 
 const SIZE = 10;
-const TOTAL = Math.ceil(1000 / SIZE); // Should come from the backend
-
 let cars = [];
 
 let sortField = "brand";
@@ -16,6 +14,19 @@ function handleSort(pageNo) {
   sortOrder = sortOrder == "asc" ? "desc" : "asc";
   sortField = "brand";
   load(pageNo);
+}
+
+// Fetches amount of cars from the backend. Used to calculate the total amount of pages for the paginator.
+async function fetchCarsTotal(){
+
+  try{
+    const response = await fetch(SERVER_URL + 'countcars');
+    const total = await response.json();
+    console.log(total)
+    return total;
+  }catch(e){
+    console.error(e);
+  }
 }
 
 async function load(pageNo) {
@@ -51,6 +62,9 @@ async function load(pageNo) {
 
   // DON'T forget to sanitize the string before inserting it into the DOM
   document.getElementById("tbody").innerHTML = sanitizeStringWithTableRows(rows);
+
+  const totalcars = await fetchCarsTotal();
+  const TOTAL = Math.ceil(totalcars / SIZE);
 
   // (C1-2) REDRAW PAGINATION
   paginator({
